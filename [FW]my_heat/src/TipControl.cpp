@@ -13,7 +13,7 @@ uint8_t PWM1_Channel = 0;    // 通道
 uint8_t PWM2_Channel = 0;    // 通道
 uint8_t PWM_Resolution = 8;   // 分辨率
 //基础温控
-uint8_t MyMOS = NMOS;
+uint8_t MyMOS = PMOS;
 uint8_t POWER = 0;
 uint8_t PWM = 0;
 uint8_t LastPWM = 0;
