@@ -3,7 +3,7 @@
 //BEEP
 uint8_t BEEP_Channel = 2;    // 通道
 
-void BeepInit(void)
+void beep_init(void)
 {
     pinMode(BEEP_PIN, OUTPUT);
     ledcAttachPin(BEEP_PIN, BEEP_Channel);  //将通道与对应的引脚连接

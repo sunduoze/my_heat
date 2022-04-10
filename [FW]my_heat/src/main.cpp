@@ -13,14 +13,14 @@ PID MyPID(&TipTemperature, &PID_Output, &PID_Setpoint, aggKp, aggKi, aggKd, DIRE
 
 char* TipName = (char*)"文件系统错误：请上报";
 
-float BootTemp = 80;      //开机温度          (°C)
-float SleepTemp = 80;     //休眠温度          (°C)
+float BootTemp =  60;      //开机温度          (°C)
+float SleepTemp = 60;      //休眠温度          (°C)
 float BoostTemp = 50;      //爆发模式升温幅度   (°C)
 
-float ShutdownTime = 0;      //关机提醒              (分)
+float ShutdownTime = 0;    //关机提醒              (分)
 float SleepTime = 10;      //休眠触发时间          (分)
 float ScreenProtectorTime = 60;     //屏保在休眠后的触发时间(秒)
-float BoostTime = 60;     //爆发模式持续时间      (秒)
+float BoostTime = 60;      //爆发模式持续时间      (秒)
 
 
 bool SYS_Ready = false;
@@ -58,7 +58,7 @@ char BootPasswd[20] = {0};
 uint8_t Language = LANG_Chinese;
 uint8_t MenuListMode = false;
 
-float ADC_PID_Cycle = 100;
+float ADC_PID_Cycle = 220;
 
 //面板状态条
 uint8_t TempCTRL_Status = TEMP_STATUS_OFF;
@@ -95,9 +95,9 @@ void oled_init()
 //先初始化硬件->显示LOGO->初始化软件
 void setup()
 {
-    //关闭中断
-    noInterrupts();
-
+    noInterrupts();//关闭中断
+    
+    heat_hw_init();
     ////////////////////////////初始化硬件/////////////////////////////
     //获取系统信息
     ChipMAC = ESP.getEfuseMac();
@@ -105,18 +105,17 @@ void setup()
     for (uint8_t i = 0; i < 6; i++)
         sprintf(ChipMAC_S + i * 3, "%02X%s", ((uint8_t*) &ChipMAC)[i], (i != 5) ? ":" : "");
 
-    //初始化串口
     Serial.begin(115200);
-    BeepInit();                     //蜂鸣器
+    beep_init();
     pinMode(POWER_ADC_PIN, INPUT);  //主电压分压检测ADC
     max6675_init();
-    TipControlInit();//初始化烙铁头
+    heat_ctrl_init();
     sys_RotaryInit();//初始化编码器
     oled_init();
 
     ////////////////////////////初始化软件/////////////////////////////
     //显示启动信息
-    // ShowBootMsg();
+    //ShowBootMsg();
     FilesSystemInit();//启动文件系统，并读取存档
     shellInit();//初始化命令解析器
     BLE_Init();//初始化蓝牙（可选）
@@ -139,7 +138,7 @@ void loop()
 {
     //获取按键
     sys_KeyProcess();
-    Serial.printf("Temp:%.6fmV,%.6fmV\r\n", analogRead(TIP_ADC_PIN) / 4096.0 * 3300, analogRead(CUR_ADC_PIN) / 4096.0 * 3300);
+    // Serial.printf("Temp:%.6fmV,%.6fmV\r\n", analogRead(TIP_ADC_PIN) / 4096.0 * 3300, analogRead(CUR_ADC_PIN) / 4096.0 * 3300);
     if (!Menu_System_State)
     {
         //温度闭环控制
@@ -149,6 +148,7 @@ void loop()
     }
     //更新状态码
     SYS_StateCode_Update();
+    Serial.printf("D:%.2f,%.2f,%.2,%.2f,%.2f\r\n", PID_Setpoint, TipTemperature, PID_Output, analogRead(TIP_ADC_PIN) / 4096.0 * 3300, analogRead(CUR_ADC_PIN) / 4096.0 * 3300);
     // Serial.printf("Temp:%lf,%lf,%g\r\n", TipTemperature, PID_Setpoint, PID_Output);
     //设置输出功率
     // uint8_t pid_out_temp = PID_Output;

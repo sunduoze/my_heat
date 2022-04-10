@@ -21,7 +21,9 @@ extern float consKp, consKi, consKd;
 
 extern uint8_t PWMOutput_Lock;
 
-void TipControlInit(void);
+extern void heat_hw_init(void);
+extern void heat_ctrl_init(void);
+
 void PWMOutput(uint8_t pin, uint8_t pwm);
 int GetADC0(void);
 double max6675_get_temp(double temp_ratio);

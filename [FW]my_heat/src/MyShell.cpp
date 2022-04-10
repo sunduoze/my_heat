@@ -13,14 +13,17 @@ void SetPIDSampleTime(int argc, char** argv)
 void SetPID_P(int argc, char** argv)
 {
     consKp = atof(argv[1]);
+    Serial.printf("kp:%f\r\n", consKp);
 }
 void SetPID_I(int argc, char** argv)
 {
     consKi = atof(argv[1]);
+    Serial.printf("ki:%f\r\n", consKi);
 }
 void SetPID_D(int argc, char** argv)
 {
     consKd = atof(argv[1]);
+    Serial.printf("kd:%f\r\n", consKd);
 }
 
 void SetK_Q(int argc, char** argv)
@@ -167,6 +170,8 @@ void shell_SendDatas(uint8_t buf[], uint32_t size)
 int command_test(int argc, char** argv)
 {
     int i;
+
+    Serial.printf("command_test\r\n");
 
     shell_println("-----------------------------------------------");
     shell_println("SHELL DEBUG / TEST UTILITY");

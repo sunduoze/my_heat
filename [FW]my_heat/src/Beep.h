@@ -40,7 +40,7 @@ extern uint16_t PlayTonesDelayTime;
 extern uint16_t PlayTones_Schedule;
 extern TONE* MySound;
 //�ײ㺯��
-void BeepInit(void);
+void beep_init(void);
 void SetTone(double freq);
 double GetNote(note_t note, uint8_t rp);
 void SetNote(note_t note, uint8_t rp);

@@ -67,7 +67,7 @@
 #define MAX6675_MISO     19
 
 //温度限制
-#define TipMaxTemp       300
+#define TipMaxTemp       250
 #define TipMinTemp       0
 
 //烙铁安装移除事件计时器冷却时间：防止事件临界值抖动
@@ -185,4 +185,6 @@ extern char* TempCTRL_Status_Mes[];
 
 extern void max6675_init(void);
 extern void max6675_print_temp(void);
+
+
 #endif

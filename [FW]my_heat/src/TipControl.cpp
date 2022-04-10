@@ -2,16 +2,15 @@
 
 //[既然有了nmos 为啥还要pmos]科普:https://www.bilibili.com/video/BV1Mb4y1k7fd?from=search&seid=15411923932488650975
 
-enum MOS_Type
-{
+enum MOS_Type{
     PMOS = 0,
     NMOS
 };
 //PWM
-uint16_t PWM_Freq = 2000;    // 频率
+uint16_t PWM_Freq = 16000;   // 频率
 uint8_t PWM1_Channel = 0;    // 通道
 uint8_t PWM2_Channel = 0;    // 通道
-uint8_t PWM_Resolution = 8;   // 分辨率
+uint8_t PWM_Resolution = 8;  // 分辨率
 //基础温控
 uint8_t MyMOS = PMOS;
 uint8_t POWER = 0;
@@ -24,25 +23,23 @@ double PID_Setpoint = 0;
 double TempGap = 0;
 uint32_t temp_sensor_sampleing_interval = 0; //ADC采样间隔(ms)
 //PID
-float aggKp = 30.0, aggKi = 0, aggKd = 0.5;
-float consKp = 20.0, consKi = 1, consKd = 0.5;
+float aggKp = 50.0, aggKi = 0.0, aggKd = 0.5;
+float consKp = 30.0, consKi = 1.0, consKd = 0.5;
 
-//初始化烙铁头温控系统
-void TipControlInit(void)
+void heat_hw_init(void)
 {
     pinMode(TIP_ADC_PIN, INPUT_PULLDOWN);
     pinMode(CUR_ADC_PIN, INPUT_PULLDOWN);
 
-    ledcAttachPin(PWM1_PIN, PWM1_Channel);  // 绑定PWM1通道
+    ledcAttachPin(PWM1_PIN, PWM1_Channel);             // 绑定PWM1通道
     ledcSetup(PWM1_Channel, PWM_Freq, PWM_Resolution); // 设置PWM1通道
 
     if (PWM2_PIN != -1)
     {
-        ledcAttachPin(PWM2_PIN, PWM2_Channel);  // 绑定PWM2通道
+        ledcAttachPin(PWM2_PIN, PWM2_Channel);             // 绑定PWM2通道
         ledcSetup(PWM2_Channel, PWM_Freq, PWM_Resolution); // 设置PWM2通道
     }
-
-    SetPOWER(0); //关闭功率管输出
+    SetPOWER(0); //关闭功率管输出 
 
     if (SW_PIN != -1)
     {
@@ -51,11 +48,15 @@ void TipControlInit(void)
         //初始化SW-PIN休眠检测引脚中断 (尽可能减少中断的使用)
         //attachInterrupt(SW_PIN, SW_IRQHandler, CHANGE);
     }
+}
 
+//初始化烙铁头温控系统
+void heat_ctrl_init(void)
+{
     //初始化烙铁头PID
     MyPID.SetOutputLimits(0, 255); //PID输出限幅
     MyPID.SetMode(AUTOMATIC); //PID控制模式
-    MyPID.SetSampleTime(10); //PID采样时间
+    MyPID.SetSampleTime(880); //PID采样时间
 }
 
 #include "MAX6675Soft.h"
@@ -181,7 +182,7 @@ void SetPOWER(uint8_t power)
     PWMOutput(PWM);
 }
 
-float ADC_PID_Cycle_List[3] = {200, 100, 50};
+float ADC_PID_Cycle_List[3] = {880, 440, 220};
 //温度控制循环
 void TemperatureControlLoop(void)
 {
