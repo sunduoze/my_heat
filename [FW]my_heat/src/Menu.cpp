@@ -466,7 +466,7 @@ void System_UI_Init(void)
     PWMOutput_Lock = false;
 }
 //系统UI
-void System_UI(void)
+void                                           System_UI(void)
 {
     Clear();
 

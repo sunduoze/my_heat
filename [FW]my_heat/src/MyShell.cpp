@@ -63,12 +63,12 @@ void OLED_ScreenshotPrint(void)
 {
     if (!OLED_ScreenshotFlag) return;
     Serial.print("OLED_ScreenshotInit\r\n"); //固定请求头
-    //SerialBT.print("OLED_ScreenshotInit\r\n"); //固定请求头
+    // SerialBT.print("OLED_ScreenshotInit\r\n"); //固定请求头
     uint8_t* p = (uint8_t*) Disp.getBufferPtr();
     for (uint32_t i = 0; i < SCREEN_PAGE_NUM * SCREEN_COLUMN; i++)
     {
         Serial.write(*p++);
-        //SerialBT.write(*p++);
+        SerialBT.write(*p++);
     }
     OLED_ScreenshotFlag = 0;
 }
@@ -83,17 +83,14 @@ void ShellGetTipTemp(void)
 void shellInit(void)
 {
     shell_init(shell_reader, shell_writer, 0);
-    shell_register((shell_program_t) command_test, PSTR("test"));
-
-    shell_register((shell_program_t) SetPIDSampleTime, PSTR("SetPID_ST"));
-    shell_register((shell_program_t) SetTargetTemperature, PSTR("SetTemp"));
-    shell_register((shell_program_t) SetPID_P, PSTR("SetPID_P"));
-    shell_register((shell_program_t) SetPID_I, PSTR("SetPID_I"));
-    shell_register((shell_program_t) SetPID_D, PSTR("SetPID_D"));
-
+    // shell_register((shell_program_t) command_test, PSTR("test"));
+    shell_register((shell_program_t) SetPID_P, PSTR("KP"));
+    shell_register((shell_program_t) SetPID_I, PSTR("KI"));
+    shell_register((shell_program_t) SetPID_D, PSTR("KD"));
     shell_register((shell_program_t) SetK_Q, PSTR("SetK_Q"));
     shell_register((shell_program_t) SetK_R, PSTR("SetK_R"));
-
+    shell_register((shell_program_t) SetPIDSampleTime, PSTR("SetPID_ST"));
+    shell_register((shell_program_t) SetTargetTemperature, PSTR("SetTemp"));
     shell_register((shell_program_t) SetEasyCursor, PSTR("SetEasyCursor"));
     shell_register((shell_program_t) OLED_ScreenshotInit, PSTR("OLED_ScreenshotInit"));
 

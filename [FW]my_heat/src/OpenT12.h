@@ -10,7 +10,6 @@
 #include <OneButton.h>
 #include "BluetoothSerial.h"
 #include "Type.h"
-#include "serial_putc.h"
 #include "MyShell.h"
 #include "Rotary.h"
 #include "MathFun.h"
@@ -35,7 +34,7 @@
 
 //注意Pin36与Pin39连接了内部霍尔传感器,不建议复用高敏感用途
 //另外，建议给ADC输入串联一个0.1uF的电容，有利于减少噪声
-#define LED_Pin          2
+#define LED_Pin          -1
 #define BEEP_PIN         25
 
 #define ROTARY_PIN1      27

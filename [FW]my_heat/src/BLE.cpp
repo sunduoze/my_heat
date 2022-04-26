@@ -1,6 +1,6 @@
 #include "OpenT12.h"
 
-char BLE_name[20] = "OpenHeat-BT";
+char BLE_name[20] = "BLE-heat";
 uint8_t BLE_State = true;
 
 void BLE_Init(void)

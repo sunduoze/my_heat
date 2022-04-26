@@ -22,7 +22,9 @@ typedef struct
     float Q;//过程噪声协方差 初始化值为0.001
     float R;//观测噪声协方差 初始化值为0.543
 } KFP;//Kalman Filter parameter
+
 float kalmanFilter(KFP* kfp, float input);
+void kalman_fast_sattling(KFP* kfp, float init_val);
 
 double ESP32_ADC2Vol(uint16_t adc);
 int sign(int x);

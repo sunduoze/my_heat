@@ -132,6 +132,11 @@ float kalmanFilter(KFP* kfp, float input)
     return kfp->out;
 }
 
+void kalman_fast_sattling(KFP* kfp, float init_val) 
+{
+    kfp->LastP = init_val;
+}
+
 /*** 
  * @description: 把ESP32的原生ADC采样数据通过经验公式转换为电压
  * @param {uint16_t} adc

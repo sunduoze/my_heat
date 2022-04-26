@@ -4,7 +4,7 @@ uint8_t TipID = 0;
 uint8_t TipTotal = 1;
 
 TIPCONFIG MyTip[MaxTipConfig] = {
-    {{51.6128997803, 0.1443523616, 0.0000061750, -0.0000000001}, {{30.0, 0, 0.5}, {20.0, 0, 0.5}}, "智能加热台"},
+    {{51.6128997803, 0.1443523616, 0.0000061750, -0.0000000001}, {{30.0, 0, 0.5}, {30.0, 1.0, 0.5}}, "智能加热台"},
 };
 
 /*** 
@@ -72,7 +72,6 @@ void FlashTipMenu(void)
     {
         MID = Get_Menu_Id(MLID, i + (1));    //查询配置列表项目id,另外 +(1)是为了跳过标题
         Menu[MID].name = MyTip[i].name;    //刷新名称
-
     }
 }
 /*** 
@@ -100,7 +99,6 @@ void NewTipConfig(void)
         MyTip[TipID].PID[1][0] = 0;
         MyTip[TipID].PID[1][1] = 0;
         MyTip[TipID].PID[1][2] = 0;
-
 
         TipTotal++;
         Pop_Windows("新建成功");

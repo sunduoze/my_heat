@@ -8,6 +8,8 @@ class PID
 
   public:
 
+  double p, i, d;
+  double i_item, d_item, p_item;
   //Constants used in some of the functions below
   #define AUTOMATIC	1
   #define MANUAL	0
@@ -68,8 +70,8 @@ class PID
 	double dispKd;				//
     
 	double kp;                  // * (P)roportional Tuning Parameter
-    double ki;                  // * (I)ntegral Tuning Parameter
-    double kd;                  // * (D)erivative Tuning Parameter
+  double ki;                  // * (I)ntegral Tuning Parameter
+  double kd;                  // * (D)erivative Tuning Parameter
 
 	int controllerDirection;
 	int pOn;

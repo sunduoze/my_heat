@@ -7,7 +7,7 @@ enum MOS_Type{
     NMOS
 };
 //PWM
-uint16_t PWM_Freq = 16000;   // 频率
+uint16_t PWM_Freq = 16200;   // 频率
 uint8_t PWM1_Channel = 0;    // 通道
 uint8_t PWM2_Channel = 0;    // 通道
 uint8_t PWM_Resolution = 8;  // 分辨率
@@ -25,6 +25,24 @@ uint32_t temp_sensor_sampleing_interval = 0; //ADC采样间隔(ms)
 //PID
 float aggKp = 50.0, aggKi = 0.0, aggKd = 0.5;
 float consKp = 30.0, consKi = 1.0, consKd = 0.5;
+
+void oled_init()
+{
+    //初始化OLED
+    Disp.begin();
+    Disp.setBusClock(921600);
+    Disp.enableUTF8Print();
+    Disp.setFontDirection(0);
+    Disp.setFontPosTop();
+    Disp.setFont(u8g2_font_wqy12_t_gb2312);
+    Disp.setDrawColor(1);
+    Disp.setFontMode(1);
+}
+
+//系统信息
+uint64_t ChipMAC;
+char ChipMAC_S[19] = {0};
+char CompileTime[20];
 
 void heat_hw_init(void)
 {
@@ -48,6 +66,39 @@ void heat_hw_init(void)
         //初始化SW-PIN休眠检测引脚中断 (尽可能减少中断的使用)
         //attachInterrupt(SW_PIN, SW_IRQHandler, CHANGE);
     }
+        ////////////////////////////初始化硬件/////////////////////////////
+    //获取系统信息
+    ChipMAC = ESP.getEfuseMac();
+    sprintf(CompileTime, "%s %s", __DATE__, __TIME__);
+    for (uint8_t i = 0; i < 6; i++)
+        sprintf(ChipMAC_S + i * 3, "%02X%s", ((uint8_t*) &ChipMAC)[i], (i != 5) ? ":" : "");
+
+    Serial.begin(115200);
+    beep_init();
+    pinMode(POWER_ADC_PIN, INPUT);  //主电压分压检测ADC
+    max6675_init();
+    heat_ctrl_init();
+    sys_RotaryInit();//初始化编码器
+    oled_init();
+
+    ////////////////////////////初始化软件/////////////////////////////
+    //显示启动信息
+    //ShowBootMsg();
+    FilesSystemInit();//启动文件系统，并读取存档
+    shellInit();//初始化命令解析器
+    BLE_Init();//初始化蓝牙（可选）
+    SetSound(BootSound); //播放音效
+    System_UI_Init();//初始化UI
+    sys_Counter_SetVal(BootTemp);//首次启动的时候根据启动温度配置，重新设定目标温度
+    LoadTipConfig();//载入烙铁头配置
+    //显示Logo
+//    EnterLogo();
+    //开机密码
+    // while (!EnterPasswd())
+    // {
+    //     Pop_Windows("身份验证失败");
+    // }
+
 }
 
 //初始化烙铁头温控系统
@@ -68,6 +119,7 @@ MAX6675Soft max6675_dev(MAX6675_CS, MAX6675_MISO, MAX6675_SCK); //for ESP8266 ch
 
 void max6675_init(void)
 {
+    float  temp_val = 0.0f;
     //初始化MAX6675
     max6675_dev.begin();
 
@@ -75,7 +127,16 @@ void max6675_init(void)
     {
         Serial.println(F("MAX6675 error")); //(F()) saves string to flash & keeps dynamic memory free
         delay(5000);
-    }    
+    }
+
+    if (Use_KFP)
+    {
+       temp_val = max6675_get_temp(1.0f);
+        if (temp_val != MAX6675_ERROR)
+        {
+            kalman_fast_sattling(&KFP_Temp, temp_val);
+        }
+    }
 }
 
 void max6675_print_temp(void)
@@ -123,10 +184,7 @@ void PWMOutput(uint8_t pwm)
     }
 }
 
-/**
- *调用卡尔曼滤波器 实践
- */
-KFP KFP_Temp = {0.02, 0, 0, 0, 0.01, 4.5};
+KFP KFP_Temp = {0.02, 0, 0, 0, 0.01, 0.1};
 float SamplingRatioWork = 10;           //采样/加热 比率
 //获取ADC读数
 int GetADC0(void)
@@ -199,7 +257,9 @@ void TemperatureControlLoop(void)
     temp_val = max6675_get_temp(1.0f);
     if (temp_val != MAX6675_ERROR)
     {
-        TipTemperature = temp_val;
+        if (Use_KFP) TipTemperature = kalmanFilter(&KFP_Temp, (float) temp_val);
+        else TipTemperature = temp_val;
+
         TempGap = abs(PID_Setpoint - TipTemperature);
 
         //根据温差选择合适的ADC-PID采样周期
@@ -217,7 +277,6 @@ void TemperatureControlLoop(void)
             if (TempGap < 30)   MyPID.SetTunings(consKp, consKi, consKd);
             else                MyPID.SetTunings(aggKp, aggKi, aggKd);
             //更新PID采样时间：采样时间可被Shell实时更改
-            //MyPID.SetSampleTime(PIDSampleTime);
             MyPID.SetSampleTime(ADC_PID_Cycle);
 
             //尝试计算PID

@@ -1,6 +1,8 @@
 {
     "cmake.configureOnOpen": true,
     "files.associations": {
-        "shell.h": "c"
+        "shell.h": "c",
+        "array": "cpp",
+        "string": "cpp"
     }
 }

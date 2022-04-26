@@ -72,67 +72,14 @@ char* TempCTRL_Status_Mes[] = {
     (char*)"加热",
     (char*)"维持",
 };
-
-//系统信息
-uint64_t ChipMAC;
-char ChipMAC_S[19] = {0};
-char CompileTime[20];
-
-void oled_init()
-{
-    //初始化OLED
-    Disp.begin();
-    Disp.setBusClock(921600);
-    Disp.enableUTF8Print();
-    Disp.setFontDirection(0);
-    Disp.setFontPosTop();
-    Disp.setFont(u8g2_font_wqy12_t_gb2312);
-    Disp.setDrawColor(1);
-    Disp.setFontMode(1);
-}
-/////////////////////////////////////////////////////////////////
-
+// D:67.50,66.29,41.21,10.00,0.44,2.27,28.97,-0.14  P10 I 2 D
 //先初始化硬件->显示LOGO->初始化软件
 void setup()
 {
     noInterrupts();//关闭中断
-    
     heat_hw_init();
-    ////////////////////////////初始化硬件/////////////////////////////
-    //获取系统信息
-    ChipMAC = ESP.getEfuseMac();
-    sprintf(CompileTime, "%s %s", __DATE__, __TIME__);
-    for (uint8_t i = 0; i < 6; i++)
-        sprintf(ChipMAC_S + i * 3, "%02X%s", ((uint8_t*) &ChipMAC)[i], (i != 5) ? ":" : "");
-
-    Serial.begin(115200);
-    beep_init();
-    pinMode(POWER_ADC_PIN, INPUT);  //主电压分压检测ADC
-    max6675_init();
-    heat_ctrl_init();
-    sys_RotaryInit();//初始化编码器
-    oled_init();
-
-    ////////////////////////////初始化软件/////////////////////////////
-    //显示启动信息
-    //ShowBootMsg();
-    FilesSystemInit();//启动文件系统，并读取存档
-    shellInit();//初始化命令解析器
-    BLE_Init();//初始化蓝牙（可选）
-    SetSound(BootSound); //播放音效
-    System_UI_Init();//初始化UI
-    sys_Counter_SetVal(BootTemp);//首次启动的时候根据启动温度配置，重新设定目标温度
-    LoadTipConfig();//载入烙铁头配置
-    //显示Logo
-//    EnterLogo();
-    //开机密码
-    // while (!EnterPasswd())
-    // {
-    //     Pop_Windows("身份验证失败");
-    // }
     SYS_Ready = true;
 }
-
 
 void loop()
 {
@@ -148,11 +95,12 @@ void loop()
     }
     //更新状态码
     SYS_StateCode_Update();
-    Serial.printf("D:%.2f,%.2f,%.2,%.2f,%.2f\r\n", PID_Setpoint, TipTemperature, PID_Output, analogRead(TIP_ADC_PIN) / 4096.0 * 3300, analogRead(CUR_ADC_PIN) / 4096.0 * 3300);
-    // Serial.printf("Temp:%lf,%lf,%g\r\n", TipTemperature, PID_Setpoint, PID_Output);
-    //设置输出功率
-    // uint8_t pid_out_temp = PID_Output;
-    // Serial.printf("Temp:%lf,%lf,%g,%d\r\n", TipTemperature, PID_Setpoint, PID_Output, pid_out_temp);
+    // Serial.printf("D:%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f\r\n", PID_Setpoint, TipTemperature, PID_Output, \
+    //               analogRead(TIP_ADC_PIN) / 4096.0 * 3300, \
+    //               analogRead(CUR_ADC_PIN) / 4096.0 * 3300, \
+    //               MyPID.p, MyPID.i, MyPID.d, MyPID.i_item, MyPID.d_item);
+        Serial.printf("D:%3.2f,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f\r\n", PID_Setpoint, TipTemperature, PID_Output, \
+                  MyPID.p, MyPID.i, MyPID.d, MyPID.p_item, MyPID.i_item, MyPID.d_item);
     SetPOWER((uint8_t)PID_Output);
     //刷新UI
     System_UI();
